@@ -1,0 +1,12 @@
+@import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap");
+
+@theme {
+  --font-jetbrainsmono: "JetBrains Mono", mono;
+  --color-wrongred: #ab5852;
+  --color-light: #eadaa0;
+  --color-med: #d69e49;
+  --color-lightolive: #838469;
+  --color-darkgreen: #476066;
+}
+/* #ab5852, #eadaa0, #d69e49, #838469 and #476066.  */
