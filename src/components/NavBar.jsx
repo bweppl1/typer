@@ -3,10 +3,11 @@ const NavBar = ({ setTestTime }) => {
     setTestTime(sec);
   };
   return (
-    <div className="max-w-5xl mx-auto font-jetbrainsmono color-light justify-between bg-lightolive text-white flex p-2">
+    <div className="max-w-5xl mx-auto font-jetbrainsmono justify-between bg-lightolive text-light flex p-2">
       <h1 className="bold">typer.</h1>
 
       <ul className="flex flex-row gap-2">
+        <li className="font-bold text-med">TIME</li>
         <li onClick={() => handleClick(15)}>15</li>
         <li onClick={() => handleClick(30)}>30</li>
         <li onClick={() => handleClick(60)}>60</li>

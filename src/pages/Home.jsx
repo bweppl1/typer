@@ -69,7 +69,9 @@ const Home = ({ testTime }) => {
 
   return (
     <div className="max-w-5xl m-auto flex h-150 bg-darkgreen font-jetbrainsmono">
-      {newTest && <div className="m-auto text-2xl">{renderTypingTest()}</div>}
+      {newTest && (
+        <div className="m-auto text-2xl text-med">{renderTypingTest()}</div>
+      )}
     </div>
   );
 };
