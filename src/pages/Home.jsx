@@ -1,10 +1,17 @@
 import { useEffect, useState } from "react";
 
+// CURRENT TASK
+// 1. working on timer/word counter
+// 2. bug where cursor isn't iterating forward on keypresses
+
 const Home = ({ testTime }) => {
   // const [timer, setTimer] = useState(0);
   const [newTest, setNewTest] = useState("test");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [typedLetters, setTypedLetters] = useState([]);
+  const [testStartTime, setTestStartTime] = useState(0);
+  const [testEndTime, setTestEndTie] = useState(0);
+  const [isComplete, setIsComplete] = useState(false);
 
   // temporary test setter
   useEffect(() => {
@@ -45,10 +52,16 @@ const Home = ({ testTime }) => {
       );
     });
   };
-
+  // Display for either time remaining or words remaining
+  const testClock = () => {
+    return "0";
+  };
   // handle keypress logic
   useEffect(() => {
     const handleKeyPress = (e) => {
+      if (typedLetters.length() === 0) {
+        setTestStartTime(Date.now());
+      }
       const typedLetter = e.key;
       // capturing array of typed letters
       setTypedLetters([...typedLetters, typedLetter]);
@@ -68,7 +81,10 @@ const Home = ({ testTime }) => {
   }, [currentIndex]);
 
   return (
-    <div className="max-w-5xl m-auto flex h-150 bg-darkgreen font-jetbrainsmono">
+    <div className="max-w-5xl m-auto flex flex-col h-150 bg-darkgreen font-jetbrainsmono">
+      <div id="timerCounter" className="text-med m-auto text-4xl">
+        {testClock()}
+      </div>
       {newTest && (
         <div className="m-auto text-2xl text-med">{renderTypingTest()}</div>
       )}
