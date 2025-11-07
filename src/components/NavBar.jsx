@@ -8,9 +8,15 @@ const NavBar = ({ setTestTime }) => {
 
       <ul className="flex flex-row gap-2">
         <li className="font-bold text-med">TIME</li>
-        <li onClick={() => handleClick(15)}>15</li>
-        <li onClick={() => handleClick(30)}>30</li>
-        <li onClick={() => handleClick(60)}>60</li>
+        <li onClick={() => handleClick(15)} className="hover:cursor-pointer">
+          15
+        </li>
+        <li onClick={() => handleClick(30)} className="hover:cursor-pointer">
+          30
+        </li>
+        <li onClick={() => handleClick(60)} className="hover:cursor-pointer">
+          60
+        </li>
       </ul>
     </div>
   );
