@@ -1,50 +1,94 @@
 import { useState, useEffect } from "react";
 
-const TypingTest = (testTime) => {
-  const [newTest, setNewTest] = useState("test");
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [typedLetters, setTypedLetters] = useState([]);
-  const [testStartTime, setTestStartTime] = useState(0);
-  const [testEndTime, setTestEndTime] = useState(0);
-  const [testStarted, setTestStarted] = useState(false); // test active state
-  const [testComplete, setTestComplete] = useState(false); // test status
-  const [testCompletionTime, setTestCompletionTime] = useState(null);
-  const [testMessage, setTestMessage] = useState(null); // display below test on completion **NOT IMPLEMENTED YET**
+// BUGS
+// 1. Can't generate random test on initial render.
 
-  // temporary test setter
+const TypingTest = ({
+  testTime,
+  wordLimit,
+  testType,
+  testSartTime,
+  testEndTime,
+  setTestStartTime,
+  setTestEndTime,
+  testStarted,
+  setTestStarted,
+  testComplete,
+  setTestComplete,
+  wpm,
+  setWpm,
+  typingErrors,
+  setTypingErrors,
+  testCompletionTime,
+}) => {
+  const [currentTest, setCurrentTest] = useState(
+    "I like big butts and I cannot lie.",
+  ); // holds state for current test, probably should call it currentTest
+  const [currentIndex, setCurrentIndex] = useState(0); // current index in the test that the user is typing
+  const [typedLetters, setTypedLetters] = useState([]);
+  const [testWords, setTestWords] = useState([]);
+
+  // load test words in from testWords.txt
   useEffect(() => {
-    setNewTest("The quick brown fox jumps over the lazy dog.");
+    const loadCSV = async () => {
+      try {
+        const response = await fetch("/testWords.txt");
+        const csvText = await response.text();
+        const lines = csvText.split("\n");
+        setTestWords(lines);
+      } catch (error) {
+        console.error("Error loading CSV", error);
+      }
+    };
+    loadCSV();
   }, []);
+
+  // re-render on test type change
+  useEffect(() => {
+    renderNewTest();
+  }, [testType, wordLimit, testTime]);
+  // randomly generate test
+  const generateRandomTest = () => {
+    let wordList = [];
+    while (wordList.length < wordLimit) {
+      wordList.push(
+        testWords[Math.floor(Math.random() * testWords.length - 1)],
+      );
+    }
+    const randomSentence = wordList.join(" ");
+    return randomSentence;
+  };
   // Render new test, reset all values
   const renderNewTest = () => {
-    const testChoices = ["Hello how are you.", "My name is Brent Weppler"];
     // setNewTest(testChoices[Math.floor(Math.random * testChoices.length)]);
-    setNewTest("Twinkle twinkle little star.");
+    setCurrentTest(generateRandomTest());
     setCurrentIndex(0);
+    setTypedLetters([]);
+    setTestComplete(false);
+    setTestStarted(false);
     setTestStartTime(0);
     setTestEndTime(0);
-    setTypedLetters([]);
-    setTestStarted(false);
-    setTestComplete(false);
-    setTestMessage("Type to Start!");
   };
 
   // render test logic
   const renderTypingTest = () => {
-    return newTest.split("").map((letter, index) => {
+    if (!currentTest) {
+      return <span>LOADING...</span>;
+    }
+    return currentTest.split("").map((letter, index) => {
       const isTyped = index < currentIndex; // sets state as behind the cursor
       const isCurrentLetter = index === currentIndex; // sets state as current letter
       let className = "ml-1";
       // formats text-color for letters that are behind the cursor
       const isCorrect = () => {
         if (
-          newTest[index] === typedLetters[index] &&
+          currentTest[index] === typedLetters[index] &&
           isTyped &&
           index < currentIndex
         ) {
           className += " text-light";
         } else if (
-          newTest[index] != typedLetters[index] &&
+          currentTest[index] != typedLetters[index] &&
           isTyped &&
           index < currentIndex
         ) {
@@ -63,13 +107,14 @@ const TypingTest = (testTime) => {
       );
     });
   };
-  useEffect(() => {
-    setTestMessage("Type to Start!");
-  }, [newTest]);
-
   // handling key presses
   useEffect(() => {
     const handleKeyPress = (e) => {
+      if (!testStarted && !testComplete) {
+        // start timer on first key strike
+        setTestStarted(true);
+        setTestStartTime(Date.now());
+      }
       if (e.code === "Backspace" && currentIndex > 0) {
         e.preventDefault();
         setCurrentIndex(currentIndex - 1);
@@ -87,18 +132,12 @@ const TypingTest = (testTime) => {
         setTypedLetters([...typedLetters, typedLetter]);
         console.log("typed " + typedLetter); // not functioning, debug later
         setCurrentIndex(currentIndex + 1); // progresses current letter
-        if (currentIndex >= newTest.length - 1) {
+        if (currentIndex >= currentTest.length - 1) {
           setTestComplete(true);
-          setTestMessage("Test Complete! - hit Enter to restart!");
-        }
-        if (!testStarted) {
-          // start timer on first key strike
-          setTestStartTime(Date.now());
-          setTestStarted(true);
-          setTestMessage("");
+          setTestEndTime(Date.now());
         }
       }
-      if (currentIndex >= newTest.length - 1 && e.code === "Enter") {
+      if (currentIndex >= currentTest.length - 1 && e.code === "Enter") {
         renderNewTest();
       }
     };
@@ -106,23 +145,27 @@ const TypingTest = (testTime) => {
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
   }, [currentIndex]);
-  // logic for completed test
-  useEffect(() => {
-    setTestEndTime(Date.now());
-    setTestCompletionTime(testEndTime - testStartTime);
-  }, [testComplete]);
-  // return component
-  const belowTestMessage = () => {
-    return testMessage;
+  const calculateWpm = () => {
+    const averageWordLength = 6;
+    const testWordCount = Math.floor(currentTest.length / averageWordLength);
+    console.log("test word count: " + testWordCount);
+    console.log("test completion time: " + testCompletionTime);
+    setWpm((testWordCount * 60) / testCompletionTime);
+    console.log("wpm: " + wpm);
   };
+  useEffect(() => {
+    calculateWpm();
+  }, [testCompletionTime]);
   return (
     <div className="max-w-5xl mx-auto flex flex-col justify-center text-center">
-      <div className="m-auto text-3xl text-lightolive">
-        {renderTypingTest()}
-      </div>
-      <div className="text-2xl text-med my-10 mx-auto">
-        {belowTestMessage()}
-      </div>
+      {currentTest && (
+        <div className="m-auto text-3xl text-lightolive">
+          {renderTypingTest()}
+        </div>
+      )}
+      {/* <div className="text-2xl text-med my-10 mx-auto"> */}
+      {/*   {belowTestMessage()} */}
+      {/* </div> */}
     </div>
   );
 };
